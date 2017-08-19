@@ -6,7 +6,9 @@ namespace YMapExporter
     public enum MapObjectTypes
     {
         Prop,
-        Vehicle
+        Vehicle,
+        Ped,
+        Marker
     }
 
     [XmlRoot("Map")]
