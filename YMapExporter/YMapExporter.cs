@@ -147,5 +147,11 @@ namespace YMapExporter
         {
             Close();
         }
+
+        private void NewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _currentYMap = new YMap();
+            propertyGrid1.SelectedObject = _currentYMap;
+        }
     }
 }
