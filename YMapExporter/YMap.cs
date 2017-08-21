@@ -40,24 +40,24 @@ namespace YMapExporter
 
         [XmlElement("flags")]
         [Category("Info")]
-        public XValue<int> Flags { get; set; }
+        public XmlValue<int> Flags { get; set; }
 
         [XmlElement("contentFlags")]
         [Category("Info")]
         [DisplayName("Content Flags")]
-        public XValue<int> ContentFlags { get; set; } = new XValue<int>(65);
+        public XmlValue<int> ContentFlags { get; set; } = new XmlValue<int>(65);
 
         [XmlElement("streamingExtentsMin")]
-        public XVector StreamingExtenstsMin { get; set; } = new XVector();
+        public XmlVector3 StreamingExtenstsMin { get; set; } = new XmlVector3();
 
         [XmlElement("streamingExtentsMax")]
-        public XVector StreamingExtenstsMax { get; set; } = new XVector();
+        public XmlVector3 StreamingExtenstsMax { get; set; } = new XmlVector3();
 
         [XmlElement("entitiesExtentsMin")]
-        public XVector EntitiesExtenstsMin { get; set; } = new XVector();
+        public XmlVector3 EntitiesExtenstsMin { get; set; } = new XmlVector3();
 
         [XmlElement("entitiesExtentsMax")]
-        public XVector EntitiesExtenstsMax { get; set; } = new XVector();
+        public XmlVector3 EntitiesExtenstsMax { get; set; } = new XmlVector3();
 
         [XmlArrayItem(ElementName = "Item", Type = typeof(Entity))]
         [XmlArray("entities")]
@@ -113,9 +113,9 @@ namespace YMapExporter
     }
 
     [TypeConverter(typeof(XValueConverter))]
-    public struct XValue<T> where T : struct
+    public struct XmlValue<T> where T : struct
     {
-        public XValue(T value)
+        public XmlValue(T value)
         {
             Value = value;
         }
@@ -144,12 +144,12 @@ namespace YMapExporter
             if (!(value is string)) return base.ConvertFrom(context, culture, value);
             if (context.PropertyDescriptor == null) return base.ConvertFrom(context, culture, value);
             var t = context.PropertyDescriptor.PropertyType;
-            if (t == typeof(XValue<int>) && int.TryParse((string) value, out int intValue))
-                return new XValue<int>(intValue);
-            if (t == typeof(XValue<float>) && float.TryParse((string) value, out float floatValue))
-                return new XValue<float>(floatValue);
-            if (t == typeof(XValue<long>) && long.TryParse((string) value, out long int64Value))
-                return new XValue<long>(int64Value);
+            if (t == typeof(XmlValue<int>) && int.TryParse((string) value, out int intValue))
+                return new XmlValue<int>(intValue);
+            if (t == typeof(XmlValue<float>) && float.TryParse((string) value, out float floatValue))
+                return new XmlValue<float>(floatValue);
+            if (t == typeof(XmlValue<long>) && long.TryParse((string) value, out long int64Value))
+                return new XmlValue<long>(int64Value);
 
             return base.ConvertFrom(context, culture, value);
         }
@@ -166,13 +166,13 @@ namespace YMapExporter
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     [Category("Render")]
-    public class XVector
+    public class XmlVector3
     {
-        public XVector()
+        public XmlVector3()
         {
         }
 
-        public XVector(float x, float y, float z)
+        public XmlVector3(float x, float y, float z)
         {
             X = x;
             Y = y;
@@ -202,13 +202,13 @@ namespace YMapExporter
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     [Category("Render")]
-    public class XQuaternion
+    public class XmlQuaternion
     {
-        public XQuaternion()
+        public XmlQuaternion()
         {
         }
 
-        public XQuaternion(float x, float y, float z, float w)
+        public XmlQuaternion(float x, float y, float z, float w)
         {
             X = x;
             Y = y;
@@ -252,45 +252,45 @@ namespace YMapExporter
 
         [XmlElement("flags")]
         [Category("Info")]
-        public XValue<int> Flags { get; set; } = new XValue<int>(1572865);
+        public XmlValue<int> Flags { get; set; } = new XmlValue<int>(1572865);
 
         [XmlElement("guid")]
         [Category("Info")]
-        public XValue<long> Guid { get; set; }
+        public XmlValue<long> Guid { get; set; }
 
         [XmlElement("position")]
         [Category("Info")]
-        public XVector Position { get; set; } = new XVector();
+        public XmlVector3 Position { get; set; } = new XmlVector3();
 
         [XmlElement("rotation")]
         [Category("Info")]
-        public XQuaternion Rotation { get; set; } = new XQuaternion();
+        public XmlQuaternion Rotation { get; set; } = new XmlQuaternion();
 
         [XmlElement("scaleXY")]
         [Category("Render")]
-        public XValue<float> ScaleXy { get; set; } = new XValue<float>(1);
+        public XmlValue<float> ScaleXy { get; set; } = new XmlValue<float>(1);
 
         [XmlElement("scaleZ")]
         [Category("Render")]
-        public XValue<float> ScaleZ { get; set; } = new XValue<float>(1);
+        public XmlValue<float> ScaleZ { get; set; } = new XmlValue<float>(1);
 
         [XmlElement("parentIndex")]
-        public XValue<int> ParentIndex { get; set; } = new XValue<int>(-1);
+        public XmlValue<int> ParentIndex { get; set; } = new XmlValue<int>(-1);
 
         [XmlElement("lodDist")]
         [Category("Render")]
-        public XValue<float> LodDistance { get; set; } = new XValue<float>(500);
+        public XmlValue<float> LodDistance { get; set; } = new XmlValue<float>(500);
 
         [XmlElement("childLodDist")]
         [Category("Render")]
-        public XValue<float> ChildLodDistance { get; set; } = new XValue<float>(500);
+        public XmlValue<float> ChildLodDistance { get; set; } = new XmlValue<float>(500);
 
         [XmlElement("lodLevel")]
         [Category("Render")]
         public LodLevels LodLevel { get; set; } = LodLevels.LODTYPES_DEPTH_HD;
 
         [XmlElement("numChildren")]
-        public XValue<int> NumChildren { get; set; }
+        public XmlValue<int> NumChildren { get; set; }
 
         [XmlElement("priorityLevel")]
         public PriorityLevels PriorityLevel { get; set; }
@@ -301,15 +301,15 @@ namespace YMapExporter
 
         [XmlElement("ambientOcclusionMultiplier")]
         [Category("Render")]
-        public XValue<int> AmbientOcclusionMultiplier { get; set; } = new XValue<int>(255);
+        public XmlValue<int> AmbientOcclusionMultiplier { get; set; } = new XmlValue<int>(255);
 
         [XmlElement("artificialAmbientOcclusion")]
         [Category("Render")]
-        public XValue<int> ArtificialAmbientOcclusion { get; set; } = new XValue<int>(255);
+        public XmlValue<int> ArtificialAmbientOcclusion { get; set; } = new XmlValue<int>(255);
 
         [XmlElement("tintValue")]
         [Category("Render")]
-        public XValue<int> TintValue { get; set; }
+        public XmlValue<int> TintValue { get; set; }
 
         public override string ToString()
         {
@@ -324,62 +324,66 @@ namespace YMapExporter
         public string Name { get; set; }
 
         [XmlElement("minExtents")]
-        public XVector MinExtents { get; set; } = new XVector();
+        public XmlVector3 MinExtents { get; set; } = new XmlVector3();
 
         [XmlElement("maxExtents")]
-        public XVector MaxExtents { get; set; } = new XVector();
+        public XmlVector3 MaxExtents { get; set; } = new XmlVector3();
 
         [XmlElement("percentage")]
-        public XValue<float> Percentage { get; set; }
+        public XmlValue<float> Percentage { get; set; }
 
         [XmlElement("range")]
-        public XValue<float> Range { get; set; }
+        public XmlValue<float> Range { get; set; }
 
         [XmlElement("startHour")]
-        public XValue<int> StartHour { get; set; } = new XValue<int>(0);
+        public XmlValue<int> StartHour { get; set; } = new XmlValue<int>(0);
 
         [XmlElement("endHour")]
-        public XValue<int> EndHour { get; set; } = new XValue<int>(23);
+        public XmlValue<int> EndHour { get; set; } = new XmlValue<int>(23);
     }
 
     [Category("Collections")]
     public class CarGenerator
     {
-        [XmlElement("bodyColorRemap3")]
-        public XValue<int> BodyColorRemap3 { get; set; } = new XValue<int>(-1);
-
-        [XmlElement("bodyColorRemap4")]
-        public XValue<int> BodyColorRemap4 { get; set; } = new XValue<int>(-1);
-
         [XmlElement("popGroup")] public object PopGroup = new object();
 
         [XmlElement("position")]
-        public XVector Position { get; set; } = new XVector();
+        public XmlVector3 Position { get; set; } = new XmlVector3();
 
         [XmlElement("orientX")]
-        public XValue<float> OrientationX { get; set; }
+        public XmlValue<float> OrientationX { get; set; }
 
         [XmlElement("orientY")]
-        public XValue<float> OrientationY { get; set; }
+        public XmlValue<float> OrientationY { get; set; }
 
         [XmlElement("perpendicularLength")]
-        public XValue<float> PerpendicularLength { get; set; }
+        public XmlValue<float> PerpendicularLength { get; set; } = new XmlValue<float>(1.5f);
 
         [XmlElement("carModel")]
         public string CarModel { get; set; }
 
         [XmlElement("flags")]
-        public XValue<int> Flags { get; set; }
+        public XmlValue<Int64> Flags { get; set; } = new XmlValue<Int64>(3680);
 
         [XmlElement("bodyColorRemap1")]
-        public XValue<int> BodyColorRemap1 { get; set; } = new XValue<int>(-1);
+        public XmlValue<int> BodyColorRemap1 { get; set; } = new XmlValue<int>(-1);
 
         [XmlElement("bodyColorRemap2")]
-        public XValue<int> BodyColorRemap2 { get; set; } = new XValue<int>(-1);
+        public XmlValue<int> BodyColorRemap2 { get; set; } = new XmlValue<int>(-1);
 
+        [XmlElement("bodyColorRemap3")]
+        public XmlValue<int> BodyColorRemap3 { get; set; } = new XmlValue<int>(-1);
+
+        [XmlElement("bodyColorRemap4")]
+        public XmlValue<int> BodyColorRemap4 { get; set; } = new XmlValue<int>(-1);
 
         [XmlElement("livery")]
-        public XValue<int> Livery { get; set; } = new XValue<int>(-1);
+        public XmlValue<int> Livery { get; set; } = new XmlValue<int>(-1);
+
+        public override string ToString()
+        {
+            return CarModel ?? base.ToString();
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -388,10 +392,10 @@ namespace YMapExporter
         private const string DateTimeFormat = "dd MMMM yyyy H:mm";
 
         [XmlElement("version")]
-        public XValue<int> Version { get; set; }
+        public XmlValue<int> Version { get; set; }
 
         [XmlElement("flags")]
-        public XValue<int> Flags { get; set; }
+        public XmlValue<int> Flags { get; set; }
 
         [XmlElement("name")]
         public string Name { get; set; }

@@ -4,13 +4,14 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
+using SlimDX;
 
 namespace YMapExporter
 {
     public partial class YMapExporter : Form
     {
         private YMap _currentYMap = new YMap();
-        private GtaVector _ymapCenter;
+        private Vector3 _ymapCenter;
 
         public YMapExporter()
         {
@@ -76,8 +77,7 @@ namespace YMapExporter
 
                 if (map != null)
                     AddObjectsToYMap(map);
-                else if (spoonerMap != null)
-                    AddObjectsToYMap(spoonerMap);
+                else AddObjectsToYMap(spoonerMap);
             }
             else
             {
@@ -89,12 +89,31 @@ namespace YMapExporter
         {
             _currentYMap = new YMap();
 
-            // Create the entities.
             foreach (var mapObject in map.Objects)
             {
-                if (mapObject.Type != MapObjectTypes.Prop) continue;
                 var name = HashMap.GetName(mapObject.Hash);
                 if (string.IsNullOrEmpty(name)) name = "0x" + mapObject.Hash.ToString("x");
+
+                if (mapObject.Type == MapObjectTypes.Vehicle)
+                {
+                    const float len = 1.5f; // TODO: FIXME
+                    var v = new Vector3(0, len, 0);
+                    var t = mapObject.Quaternion.Multiply(v);
+                    var orientX = t.X;
+                    var orientY = t.Y;
+
+                    var car = new CarGenerator
+                    {
+                        Position =  new XmlVector3(mapObject.Position.X, mapObject.Position.Y, mapObject.Position.Z),
+                        OrientationX = new XmlValue<float>(orientX),
+                        OrientationY = new XmlValue<float>(orientY),
+                        PerpendicularLength = new XmlValue<float>(len),
+                        CarModel = name
+                    };
+                    _currentYMap.CarGenerators.Add(car);
+                }
+
+                if (mapObject.Type != MapObjectTypes.Prop) continue;
                 var rot = mapObject.Quaternion;
                 if (rot.W < 0) rot.W = -rot.W;
                 else
@@ -105,20 +124,21 @@ namespace YMapExporter
                 }
                 var ent = new Entity
                 {
-                    Position = mapObject.Position,
-                    Rotation = rot,
+                    Position = new XmlVector3(mapObject.Position.X, mapObject.Position.Y, mapObject.Position.Z),
+                    Rotation = new XmlQuaternion(rot.X, rot.Y, rot.Z, rot.W),
                     ArchetypeName = name
                 };
                 if (!mapObject.Dynamic)
-                    ent.Flags = new XValue<int>(32);
+                    ent.Flags = new XmlValue<int>(32);
                 _currentYMap.Entities.Add(ent);
             }
+
             CalcExtents();
 
             // Set some default values.
             _currentYMap.MetaDataBlock.Author = _currentYMap.MetaDataBlock.Owner = map.MetaData.Creator;
-            _currentYMap.MetaDataBlock.Version = new XValue<int>(0);
-            _currentYMap.Flags = new XValue<int>(0);
+            _currentYMap.MetaDataBlock.Version = new XmlValue<int>(0);
+            _currentYMap.Flags = new XmlValue<int>(0);
 
             // Set the current y map.
             propertyGrid1.SelectedObject = _currentYMap;
@@ -128,13 +148,34 @@ namespace YMapExporter
         {
             _currentYMap = new YMap();
 
-            // Create the entities.
-            foreach (var placement in map.Placements)
+            foreach (var mapObject in map.Placements)
             {
-                if (placement.Type != 3) continue;
-                var name = placement.HashName;
-                if (string.IsNullOrEmpty(name)) name = "0x" + placement.ModelHash;
-                GtaQuaternion rot = (XQuaternion)placement.PositionRotation;
+                var name = mapObject.HashName;
+                if (string.IsNullOrEmpty(name)) name = "0x" + mapObject.ModelHash;
+
+                var pos = mapObject.PositionRotation.GetPosition();
+
+                if (mapObject.Type == 2)
+                {
+                    const float len = 1.5f; // TODO: FIXME
+                    var v = new Vector3(0, len, 0);
+                    var t = mapObject.PositionRotation.GetQuaternion().Multiply(v);
+                    var orientX = t.X;
+                    var orientY = t.Y;
+
+                    var car = new CarGenerator
+                    {
+                        Position = new XmlVector3(pos.X, pos.Y, pos.Z),
+                        OrientationX = new XmlValue<float>(orientX),
+                        OrientationY = new XmlValue<float>(orientY),
+                        PerpendicularLength = new XmlValue<float>(len),
+                        CarModel = name
+                    };
+                    _currentYMap.CarGenerators.Add(car);
+                }
+
+                if (mapObject.Type != 3) continue;
+                var rot = mapObject.PositionRotation.GetQuaternion();
                 if (rot.W < 0) rot.W = -rot.W;
                 else
                 {
@@ -144,19 +185,20 @@ namespace YMapExporter
                 }
                 var ent = new Entity
                 {
-                    Position = placement.PositionRotation,
-                    Rotation = rot,
+                    Position = new XmlVector3(pos.X, pos.Y, pos.Z),
+                    Rotation = new XmlQuaternion(rot.X, rot.Y, rot.Z, rot.W),
                     ArchetypeName = name
                 };
-                if (!placement.Dynamic)
-                    ent.Flags = new XValue<int>(32);
+                if (!mapObject.Dynamic)
+                    ent.Flags = new XmlValue<int>(32);
                 _currentYMap.Entities.Add(ent);
             }
+
             CalcExtents();
 
             // Set some default values.
-            _currentYMap.MetaDataBlock.Version = new XValue<int>(0);
-            _currentYMap.Flags = new XValue<int>(0);
+            _currentYMap.MetaDataBlock.Version = new XmlValue<int>(0);
+            _currentYMap.Flags = new XmlValue<int>(0);
 
             // Set the current y map.
             propertyGrid1.SelectedObject = _currentYMap;
@@ -205,19 +247,21 @@ namespace YMapExporter
 
         private void CalcExtents()
         {
-            if (!_currentYMap.Entities.Any())
+            if (!_currentYMap.Entities.Any() && !_currentYMap.CarGenerators.Any())
                 return;
 
-            _ymapCenter = new GtaVector();
+            _ymapCenter = new Vector3();
+
             foreach (var entity in _currentYMap.Entities)
-            {
-                _ymapCenter += entity.Position;
-            }
-            _ymapCenter /= _currentYMap.Entities.Count;
-            _currentYMap.StreamingExtenstsMin = new XVector(_ymapCenter.X - 10000, _ymapCenter.Y - 10000, _ymapCenter.Z - 1000);
-            _currentYMap.StreamingExtenstsMax = new XVector(_ymapCenter.X + 10000, _ymapCenter.Y + 10000, _ymapCenter.Z + 5000);
-            _currentYMap.EntitiesExtenstsMin = new XVector(_ymapCenter.X - 10000, _ymapCenter.Y - 10000, _ymapCenter.Z - 1000);
-            _currentYMap.EntitiesExtenstsMax = new XVector(_ymapCenter.X + 10000, _ymapCenter.Y + 10000, _ymapCenter.Z + 5000);
+                _ymapCenter += new Vector3(entity.Position.X, entity.Position.Y, entity.Position.Z);
+            foreach (var carGenerator in _currentYMap.CarGenerators)
+                _ymapCenter += new Vector3(carGenerator.Position.X, carGenerator.Position.Y, carGenerator.Position.Z);
+
+            _ymapCenter /= _currentYMap.Entities.Count + _currentYMap.CarGenerators.Count;
+            _currentYMap.StreamingExtenstsMin = new XmlVector3(_ymapCenter.X - 10000, _ymapCenter.Y - 10000, _ymapCenter.Z - 1000);
+            _currentYMap.StreamingExtenstsMax = new XmlVector3(_ymapCenter.X + 10000, _ymapCenter.Y + 10000, _ymapCenter.Z + 5000);
+            _currentYMap.EntitiesExtenstsMin = new XmlVector3(_ymapCenter.X - 10000, _ymapCenter.Y - 10000, _ymapCenter.Z - 1000);
+            _currentYMap.EntitiesExtenstsMax = new XmlVector3(_ymapCenter.X + 10000, _ymapCenter.Y + 10000, _ymapCenter.Z + 5000);
             propertyGrid1.SelectedObject = _currentYMap;
         }
     }

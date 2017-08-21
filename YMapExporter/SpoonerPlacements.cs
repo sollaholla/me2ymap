@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SlimDX;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace YMapExporter
@@ -102,14 +103,14 @@ namespace YMapExporter
 
         public float Yaw { get; set; }
 
-        public static implicit operator XQuaternion(PositionRotation lhs)
+        public Vector3 GetPosition()
         {
-            return new GtaVector(lhs.Pitch, lhs.Roll, lhs.Yaw).ToQuaternion();
+            return new Vector3(X, Y, Z);
         }
 
-        public static implicit operator XVector(PositionRotation lhs)
+        public Quaternion GetQuaternion()
         {
-            return new XVector(lhs.X, lhs.Y, lhs.Z);
+            return Quaternion.RotationYawPitchRoll(Yaw, Pitch, Roll);
         }
     }
 }
