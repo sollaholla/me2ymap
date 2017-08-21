@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -9,6 +10,7 @@ namespace YMapExporter
     public partial class YMapExporter : Form
     {
         private YMap _currentYMap = new YMap();
+        private GtaVector _ymapCenter;
 
         public YMapExporter()
         {
@@ -24,7 +26,7 @@ namespace YMapExporter
         {
             var o = new OpenFileDialog
             {
-                Filter = @"Map Editor files (*.xml)|*.xml|YMap files (*.ymap.xml)|*.ymap.xml"
+                Filter = @"Map Editor files (*.xml)|*.xml|Menyoo Spooner files (*.xml)|*.xml|YMap files (*.ymap.xml)|*.ymap.xml"
             };
 
             if (o.ShowDialog() != DialogResult.OK)
@@ -35,7 +37,7 @@ namespace YMapExporter
                 using (var reader = XmlReader.Create(o.FileName))
                 {
                     var s = new XmlSerializer(typeof(YMap));
-                    _currentYMap = (YMap) s.Deserialize(reader);
+                    _currentYMap = (YMap)s.Deserialize(reader);
                     reader.Close();
                     propertyGrid1.SelectedObject = _currentYMap;
                 }
@@ -43,28 +45,39 @@ namespace YMapExporter
             else if (o.FileName.EndsWith(".xml"))
             {
                 MapEditorMap map = null;
+                SpoonerPlacements spoonerMap = null;
 
-                using (var reader = XmlReader.Create(o.FileName))
+                var reader = XmlReader.Create(o.FileName);
+                try
+                {
+                    var s = new XmlSerializer(typeof(MapEditorMap));
+                    map = (MapEditorMap)s.Deserialize(reader);
+                }
+                catch
                 {
                     try
                     {
-                        var s = new XmlSerializer(typeof(MapEditorMap));
-                        map = (MapEditorMap) s.Deserialize(reader);
-                        reader.Close();
+                        var s = new XmlSerializer(typeof(SpoonerPlacements));
+                        spoonerMap = (SpoonerPlacements)s.Deserialize(reader);
                     }
                     catch (Exception ex)
                     {
+                        // ignored
                         MessageBox.Show(ex.Message + Environment.NewLine + ex.StackTrace);
                     }
                 }
+                reader.Close();
 
-                if (map == null)
+                if (map == null && spoonerMap == null)
                 {
-                    MessageBox.Show(@"Failed to read map editor file.");
+                    MessageBox.Show(@"Failed to read file.");
                     return;
                 }
 
-                AddObjectsToYMap(map);
+                if (map != null)
+                    AddObjectsToYMap(map);
+                else if (spoonerMap != null)
+                    AddObjectsToYMap(spoonerMap);
             }
             else
             {
@@ -77,13 +90,11 @@ namespace YMapExporter
             _currentYMap = new YMap();
 
             // Create the entities.
-            var accum = new GtaVector();
             foreach (var mapObject in map.Objects)
             {
                 if (mapObject.Type != MapObjectTypes.Prop) continue;
                 var name = HashMap.GetName(mapObject.Hash);
                 if (string.IsNullOrEmpty(name)) name = "0x" + mapObject.Hash.ToString("x");
-
                 var rot = mapObject.Quaternion;
                 if (rot.W < 0) rot.W = -rot.W;
                 else
@@ -92,25 +103,58 @@ namespace YMapExporter
                     rot.Z = -rot.Z;
                     rot.Y = -rot.Y;
                 }
-
-                var ent = new Entity {
+                var ent = new Entity
+                {
                     Position = mapObject.Position,
                     Rotation = rot,
                     ArchetypeName = name
                 };
-                accum += mapObject.Position;
+                if (!mapObject.Dynamic)
+                    ent.Flags = new XValue<int>(32);
                 _currentYMap.Entities.Add(ent);
             }
-            accum /= map.Objects.Count;
-
-            // Get the extents from the position accumulator.
-            _currentYMap.StreamingExtenstsMin = new XVector(accum.X - 10000, accum.Y - 10000, accum.Z - 1000);
-            _currentYMap.StreamingExtenstsMax = new XVector(accum.X + 10000, accum.Y + 10000, accum.Z + 5000);
-            _currentYMap.EntitiesExtenstsMin = new XVector(accum.X - 10000, accum.Y - 10000, accum.Z - 1000);
-            _currentYMap.EntitiesExtenstsMax = new XVector(accum.X + 10000, accum.Y + 10000, accum.Z + 5000);
+            CalcExtents();
 
             // Set some default values.
             _currentYMap.MetaDataBlock.Author = _currentYMap.MetaDataBlock.Owner = map.MetaData.Creator;
+            _currentYMap.MetaDataBlock.Version = new XValue<int>(0);
+            _currentYMap.Flags = new XValue<int>(0);
+
+            // Set the current y map.
+            propertyGrid1.SelectedObject = _currentYMap;
+        }
+
+        private void AddObjectsToYMap(SpoonerPlacements map)
+        {
+            _currentYMap = new YMap();
+
+            // Create the entities.
+            foreach (var placement in map.Placements)
+            {
+                if (placement.Type != 3) continue;
+                var name = placement.HashName;
+                if (string.IsNullOrEmpty(name)) name = "0x" + placement.ModelHash;
+                GtaQuaternion rot = (XQuaternion)placement.PositionRotation;
+                if (rot.W < 0) rot.W = -rot.W;
+                else
+                {
+                    rot.X = -rot.X;
+                    rot.Z = -rot.Z;
+                    rot.Y = -rot.Y;
+                }
+                var ent = new Entity
+                {
+                    Position = placement.PositionRotation,
+                    Rotation = rot,
+                    ArchetypeName = name
+                };
+                if (!placement.Dynamic)
+                    ent.Flags = new XValue<int>(32);
+                _currentYMap.Entities.Add(ent);
+            }
+            CalcExtents();
+
+            // Set some default values.
             _currentYMap.MetaDataBlock.Version = new XValue<int>(0);
             _currentYMap.Flags = new XValue<int>(0);
 
@@ -151,6 +195,29 @@ namespace YMapExporter
         private void NewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _currentYMap = new YMap();
+            propertyGrid1.SelectedObject = _currentYMap;
+        }
+
+        private void CalculateExtentsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CalcExtents();
+        }
+
+        private void CalcExtents()
+        {
+            if (!_currentYMap.Entities.Any())
+                return;
+
+            _ymapCenter = new GtaVector();
+            foreach (var entity in _currentYMap.Entities)
+            {
+                _ymapCenter += entity.Position;
+            }
+            _ymapCenter /= _currentYMap.Entities.Count;
+            _currentYMap.StreamingExtenstsMin = new XVector(_ymapCenter.X - 10000, _ymapCenter.Y - 10000, _ymapCenter.Z - 1000);
+            _currentYMap.StreamingExtenstsMax = new XVector(_ymapCenter.X + 10000, _ymapCenter.Y + 10000, _ymapCenter.Z + 5000);
+            _currentYMap.EntitiesExtenstsMin = new XVector(_ymapCenter.X - 10000, _ymapCenter.Y - 10000, _ymapCenter.Z - 1000);
+            _currentYMap.EntitiesExtenstsMax = new XVector(_ymapCenter.X + 10000, _ymapCenter.Y + 10000, _ymapCenter.Z + 5000);
             propertyGrid1.SelectedObject = _currentYMap;
         }
     }

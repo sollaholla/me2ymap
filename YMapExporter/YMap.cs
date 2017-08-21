@@ -9,7 +9,8 @@ namespace YMapExporter
 {
     public enum EntityTypes
     {
-        CEntityDef
+        CEntityDef,
+        CMloInstanceDef
     }
 
     public enum LodLevels
@@ -105,6 +106,10 @@ namespace YMapExporter
         [Category("MetaData")]
         [DisplayName("Meta Data")]
         public MetaDataBlock MetaDataBlock { get; set; } = new MetaDataBlock();
+
+        //[XmlIgnore]
+        //[Category("Ytyp Support")]
+        //public XVector CustomOrigin { get; set; } = new XVector();
     }
 
     [TypeConverter(typeof(XValueConverter))]
@@ -174,6 +179,9 @@ namespace YMapExporter
             Z = z;
         }
 
+        [Browsable(false)]
+        public bool IsEmpty => X == 0 && Y == 0 && Z == 0;
+
         [XmlAttribute("x")]
         [RefreshProperties(RefreshProperties.All)]
         public float X { get; set; }
@@ -231,6 +239,7 @@ namespace YMapExporter
     }
 
     [Category("Collections")]
+    [XmlType(TypeName = "Item")]
     public class Entity
     {
         [XmlElement("archetypeName")]

@@ -40,5 +40,60 @@ namespace YMapExporter
 
             return result;
         }
+
+        public static GtaQuaternion ToQuaternion(this GtaVector vect)
+        {
+            vect = new GtaVector()
+            {
+                X = vect.X.Denormalize() * -1f,
+                Y = vect.Y.Denormalize() - 180f,
+                Z = vect.Z.Denormalize() - 180f,
+            };
+
+            vect = vect.TransformVector(ToRadians);
+
+            var rollOver2 = vect.Z * 0.5f;
+            var sinRollOver2 = (float)Math.Sin(rollOver2);
+            var cosRollOver2 = (float)Math.Cos(rollOver2);
+            var pitchOver2 = vect.Y * 0.5f;
+            var sinPitchOver2 = (float)Math.Sin(pitchOver2);
+            var cosPitchOver2 = (float)Math.Cos(pitchOver2);
+            var yawOver2 = vect.X * 0.5f; // pitch
+            var sinYawOver2 = (float)Math.Sin(yawOver2);
+            var cosYawOver2 = (float)Math.Cos(yawOver2);
+            var result = new GtaQuaternion
+            {
+                X = cosYawOver2 * cosPitchOver2 * cosRollOver2 + sinYawOver2 * sinPitchOver2 * sinRollOver2,
+                Y = cosYawOver2 * cosPitchOver2 * sinRollOver2 - sinYawOver2 * sinPitchOver2 * cosRollOver2,
+                Z = cosYawOver2 * sinPitchOver2 * cosRollOver2 + sinYawOver2 * cosPitchOver2 * sinRollOver2,
+                W = sinYawOver2 * cosPitchOver2 * cosRollOver2 - cosYawOver2 * sinPitchOver2 * sinRollOver2
+            };
+            return result;
+        }
+
+        public static float Denormalize(this float h)
+        {
+            return h < 0f ? h + 360f : h;
+        }
+
+        public static GtaVector Denormalize(this GtaVector v)
+        {
+            return new GtaVector(v.X.Denormalize(), v.Y.Denormalize(), v.Z.Denormalize());
+        }
+
+        public static GtaVector TransformVector(this GtaVector i, Func<float, float> method)
+        {
+            return new GtaVector()
+            {
+                X = method(i.X),
+                Y = method(i.Y),
+                Z = method(i.Z),
+            };
+        }
+
+        public static float ToRadians(this float val)
+        {
+            return (float)(Math.PI / 180) * val;
+        }
     }
 }
