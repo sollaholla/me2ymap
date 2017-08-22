@@ -4,7 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
-using SlimDX;
+using Maths;
 
 namespace YMapExporter
 {
@@ -98,7 +98,7 @@ namespace YMapExporter
                 {
                     const float len = 1.5f; // TODO: FIXME
                     var v = new Vector3(0, len, 0);
-                    var t = mapObject.Quaternion.Multiply(v);
+                    var t = mapObject.Quaternion * v;
                     var orientX = t.X;
                     var orientY = t.Y;
 
@@ -114,14 +114,11 @@ namespace YMapExporter
                 }
 
                 if (mapObject.Type != MapObjectTypes.Prop) continue;
+
                 var rot = mapObject.Quaternion;
                 if (rot.W < 0) rot.W = -rot.W;
-                else
-                {
-                    rot.X = -rot.X;
-                    rot.Z = -rot.Z;
-                    rot.Y = -rot.Y;
-                }
+                else rot.Conjugate();
+
                 var ent = new Entity
                 {
                     Position = new XmlVector3(mapObject.Position.X, mapObject.Position.Y, mapObject.Position.Z),
@@ -148,18 +145,18 @@ namespace YMapExporter
         {
             _currentYMap = new YMap();
 
-            foreach (var mapObject in map.Placements)
+            foreach (var placement in map.Placements)
             {
-                var name = mapObject.HashName;
-                if (string.IsNullOrEmpty(name)) name = "0x" + mapObject.ModelHash;
+                var name = placement.HashName;
+                if (string.IsNullOrEmpty(name)) name = placement.ModelHash;
 
-                var pos = mapObject.PositionRotation.GetPosition();
+                var pos = placement.PositionRotation.GetPosition();
 
-                if (mapObject.Type == 2)
+                if (placement.Type == 2)
                 {
                     const float len = 1.5f; // TODO: FIXME
                     var v = new Vector3(0, len, 0);
-                    var t = mapObject.PositionRotation.GetQuaternion().Multiply(v);
+                    var t = placement.PositionRotation.GetQuaternion() * v;
                     var orientX = t.X;
                     var orientY = t.Y;
 
@@ -174,22 +171,18 @@ namespace YMapExporter
                     _currentYMap.CarGenerators.Add(car);
                 }
 
-                if (mapObject.Type != 3) continue;
-                var rot = mapObject.PositionRotation.GetQuaternion();
-                if (rot.W < 0) rot.W = -rot.W;
-                else
-                {
-                    rot.X = -rot.X;
-                    rot.Z = -rot.Z;
-                    rot.Y = -rot.Y;
-                }
+                if (placement.Type != 3) continue;
+                var rot = placement.PositionRotation.GetQuaternion();
+                //if (rot.W < 0) rot.W = -rot.W;
+                //else rot.Conjugate();
+
                 var ent = new Entity
                 {
                     Position = new XmlVector3(pos.X, pos.Y, pos.Z),
                     Rotation = new XmlQuaternion(rot.X, rot.Y, rot.Z, rot.W),
                     ArchetypeName = name
                 };
-                if (!mapObject.Dynamic)
+                if (!placement.Dynamic)
                     ent.Flags = new XmlValue<int>(32);
                 _currentYMap.Entities.Add(ent);
             }
