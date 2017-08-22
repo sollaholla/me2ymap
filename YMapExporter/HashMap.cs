@@ -9516,7 +9516,7 @@ namespace YMapExporter
         private static readonly SortedDictionary<long, string> Cache = new SortedDictionary<long, string>();
         private static readonly List<long> Invalid = new List<long>();
 
-        public static string GetName(long hash)
+        public static string GetModelName(long hash)
         {
             if (Invalid.Contains(hash)) return string.Empty;
             if (Cache.ContainsKey(hash)) return Cache[hash];
