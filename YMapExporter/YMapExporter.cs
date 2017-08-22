@@ -173,8 +173,8 @@ namespace YMapExporter
 
                 if (placement.Type != 3) continue;
                 var rot = placement.PositionRotation.GetQuaternion();
-                if (rot.W < 0) rot.W = -rot.W;
-                else rot.Conjugate();
+                //if (rot.W < 0) rot.W = -rot.W;
+                //else rot.Conjugate();
 
                 var ent = new Entity
                 {
