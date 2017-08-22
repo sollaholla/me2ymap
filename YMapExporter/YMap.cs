@@ -106,10 +106,10 @@ namespace YMapExporter
         [Category("MetaData")]
         [DisplayName("Meta Data")]
         public MetaDataBlock MetaDataBlock { get; set; } = new MetaDataBlock();
+        //public XVector CustomOrigin { get; set; } = new XVector();
+        //[Category("Ytyp Support")]
 
         //[XmlIgnore]
-        //[Category("Ytyp Support")]
-        //public XVector CustomOrigin { get; set; } = new XVector();
     }
 
     [TypeConverter(typeof(XValueConverter))]
@@ -363,7 +363,7 @@ namespace YMapExporter
         public string CarModel { get; set; }
 
         [XmlElement("flags")]
-        public XmlValue<Int64> Flags { get; set; } = new XmlValue<Int64>(3680);
+        public XmlValue<long> Flags { get; set; } = new XmlValue<long>(3680);
 
         [XmlElement("bodyColorRemap1")]
         public XmlValue<int> BodyColorRemap1 { get; set; } = new XmlValue<int>(-1);
