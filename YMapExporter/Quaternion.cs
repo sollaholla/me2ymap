@@ -129,6 +129,7 @@ namespace Maths
             result.W = left.W + right.W;
             return result;
         }
+
         public static Quaternion Divide(Quaternion left, Quaternion right)
         {
             Quaternion result = new Quaternion();
