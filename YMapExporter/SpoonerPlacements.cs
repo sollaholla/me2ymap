@@ -1,4 +1,4 @@
-﻿using Maths;
+﻿using SlimDX;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
@@ -110,7 +110,7 @@ namespace YMapExporter
 
         public Quaternion GetQuaternion()
         {
-            return Quaternion.Euler(Roll, Pitch, Yaw);
+            return new Vector3(Pitch, Roll, Yaw).ToQuaternion();
         }
     }
 }

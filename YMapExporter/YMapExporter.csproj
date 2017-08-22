@@ -71,6 +71,9 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SlimDX, Version=4.0.13.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86">
+      <HintPath>..\packages\SlimDX.4.0.13.44\lib\NET40\SlimDX.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -91,9 +94,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Quaternion.cs" />
+    <Compile Include="QuaternionExtensions.cs" />
     <Compile Include="SpoonerPlacements.cs" />
-    <Compile Include="Vector3.cs" />
     <Compile Include="YMap.cs" />
     <Compile Include="YMapExporter.cs">
       <SubType>Form</SubType>
