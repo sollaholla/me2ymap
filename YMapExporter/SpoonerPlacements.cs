@@ -110,7 +110,11 @@ namespace YMapExporter
 
         public Quaternion GetQuaternion()
         {
-            return new Vector3(Pitch, Roll, Yaw).ToQuaternion();
+            var v = new Vector3(Roll, Pitch, Yaw);
+            v = Vector3.Negate(v);
+            var eul = v.Euler();
+
+            return eul;
         }
     }
 }

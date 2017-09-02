@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -42,6 +43,7 @@ namespace YMapExporter
                     _currentYMap = (YMap) s.Deserialize(reader);
                     reader.Close();
                     RefreshView();
+                    Text = @"ME2YM - " + Path.GetFileName(o.FileName);
                 }
             }
             else if (o.FileName.EndsWith(".xml"))
@@ -61,6 +63,7 @@ namespace YMapExporter
                     {
                         var s = new XmlSerializer(typeof(SpoonerPlacements));
                         spoonerMap = (SpoonerPlacements) s.Deserialize(reader);
+                        Text = @"ME2YM - " + Path.GetFileName(o.FileName);
                     }
                     catch { /* ignored */ }
                 }
@@ -97,7 +100,7 @@ namespace YMapExporter
                         CreateCarGenerator(model, position, mapObject.Quaternion, CarGenScale);
                         break;
                     case MapObjectTypes.Prop:
-                        CreateEntity(model, position, mapObject.Quaternion, mapObject.Dynamic);
+                        CreateEntity(model, position, mapObject.Quaternion, mapObject.Dynamic || mapObject.Door);
                         break;
                 }
             }
@@ -123,7 +126,7 @@ namespace YMapExporter
                         CreateCarGenerator(model, position, rotation, CarGenScale);
                         break;
                     case 3:
-                        CreateEntity(model, position, rotation, placement.Dynamic);
+                        CreateEntity(model, position, rotation, placement.Dynamic, false);
                         break;
                 }
             }
@@ -133,10 +136,13 @@ namespace YMapExporter
         }
 
         private void CreateEntity(string model, Vector3 position,
-            Quaternion rotation, bool dynamic)
+            Quaternion rotation, bool dynamic, bool conjugateRotation = true)
         {
-            if (rotation.W < 0) rotation.W = -rotation.W;
-            else rotation.Conjugate();
+            if (conjugateRotation)
+            {
+                if (rotation.W < 0) rotation.W = -rotation.W;
+                else rotation.Conjugate();
+            }
 
             var ent = new Entity
             {
@@ -204,6 +210,7 @@ namespace YMapExporter
         private void NewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _currentYMap = new YMap();
+            Text = @"ME2YM";
             RefreshView();
         }
 
