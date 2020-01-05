@@ -14,9 +14,13 @@ namespace YMapExporter
         private const float CarGenScale = 1.5f;
         private YMap _currentYMap = new YMap();
 
-        public YMapExporter()
+        public YMapExporter(string _cmdArg)
         {
             InitializeComponent();
+            if (_cmdArg != "")
+            {
+                OpenFile(_cmdArg);
+            }
         }
 
         private void YMapExporter_Load(object sender, EventArgs e)
@@ -35,35 +39,41 @@ namespace YMapExporter
             if (o.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (o.FileName.EndsWith(".ymap.xml"))
+            OpenFile(o.FileName);
+        }
+
+
+        private void OpenFile(string _filePath)
+        {
+            if (_filePath.EndsWith(".ymap.xml"))
             {
-                using (var reader = XmlReader.Create(o.FileName))
+                using (var reader = XmlReader.Create(_filePath))
                 {
                     var s = new XmlSerializer(typeof(YMap));
-                    _currentYMap = (YMap) s.Deserialize(reader);
+                    _currentYMap = (YMap)s.Deserialize(reader);
                     reader.Close();
                     RefreshView();
-                    Text = @"ME2YM - " + Path.GetFileName(o.FileName);
+                    Text = @"ME2YM - " + Path.GetFileName(_filePath);
                 }
             }
-            else if (o.FileName.EndsWith(".xml"))
+            else if (_filePath.EndsWith(".xml"))
             {
                 MapEditorMap map = null;
                 SpoonerPlacements spoonerMap = null;
 
-                var reader = XmlReader.Create(o.FileName);
+                var reader = XmlReader.Create(_filePath);
                 try
                 {
                     var s = new XmlSerializer(typeof(MapEditorMap));
-                    map = (MapEditorMap) s.Deserialize(reader);
+                    map = (MapEditorMap)s.Deserialize(reader);
                 }
                 catch
                 {
                     try
                     {
                         var s = new XmlSerializer(typeof(SpoonerPlacements));
-                        spoonerMap = (SpoonerPlacements) s.Deserialize(reader);
-                        Text = @"ME2YM - " + Path.GetFileName(o.FileName);
+                        spoonerMap = (SpoonerPlacements)s.Deserialize(reader);
+                        Text = @"ME2YM - " + Path.GetFileName(_filePath);
                     }
                     catch { /* ignored */ }
                 }
@@ -83,6 +93,7 @@ namespace YMapExporter
                 MessageBox.Show(@"This is not a valid type!");
             }
         }
+
 
         private void ConvertToYMap(MapEditorMap map)
         {

@@ -76,7 +76,7 @@ namespace YMapExporter
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.NewToolStripMenuItem_Click);
             // 
@@ -84,7 +84,7 @@ namespace YMapExporter
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
@@ -92,7 +92,7 @@ namespace YMapExporter
             // 
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
             this.exportToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.exportToolStripMenuItem.Text = "Export";
             this.exportToolStripMenuItem.ToolTipText = "Export this ymap to openFormats.";
             this.exportToolStripMenuItem.Click += new System.EventHandler(this.ExportToolStripMenuItem_Click);
@@ -101,7 +101,7 @@ namespace YMapExporter
             // 
             this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
             this.quitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.quitToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.quitToolStripMenuItem.Text = "Quit";
             this.quitToolStripMenuItem.Click += new System.EventHandler(this.QuitToolStripMenuItem_Click);
             // 
@@ -116,7 +116,7 @@ namespace YMapExporter
             // calculateExtentsToolStripMenuItem
             // 
             this.calculateExtentsToolStripMenuItem.Name = "calculateExtentsToolStripMenuItem";
-            this.calculateExtentsToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.calculateExtentsToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.calculateExtentsToolStripMenuItem.Text = "Calc. Extents";
             this.calculateExtentsToolStripMenuItem.Click += new System.EventHandler(this.CalculateExtentsToolStripMenuItem_Click);
             // 
