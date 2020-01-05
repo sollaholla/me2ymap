@@ -9,11 +9,18 @@ namespace YMapExporter
         ///     The main entry point for the application.
         /// </summary>
         [STAThread]
-        private static void Main()
+        private static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new YMapExporter());
+            if (args.Length == 1) 
+            {
+                Application.Run(new YMapExporter(args[0]));
+            }
+            else
+            {
+                Application.Run(new YMapExporter(""));
+            }
         }
     }
 }
